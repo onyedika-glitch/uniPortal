@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 
 // --- MOCK DATA ---
 // In a real application, this data would come from a database.
-const MOCK_ANNOUNCEMENTS = [
+const MOCK_INITIAL_ANNOUNCEMENTS = [
     { id: 1, title: "Mid-Semester Break Announced", date: "2025-10-20", content: "The university will be on mid-semester break from October 27th to October 31st. Classes will resume on November 3rd.", category: "Academic" },
     { id: 2, title: "Annual Tech Fest 'Innovate 2025'", date: "2025-10-18", content: "Get ready for the biggest tech event of the year! Innovate 2025 will feature coding competitions, workshops, and guest speakers. Register by October 25th.", category: "Events" },
     { id: 3, title: "Library Opening Hours Extended", date: "2025-10-15", content: "To facilitate students during the exam period, the main library will be open 24/7 from November 1st until the end of the semester.", category: "Facilities" },
@@ -10,65 +10,57 @@ const MOCK_ANNOUNCEMENTS = [
     { id: 5, title: "Guest Lecture on Artificial Intelligence", date: "2025-10-10", content: "Join us for an insightful lecture by Dr. Ada Lovelace on 'The Future of AI' this Friday at the main auditorium.", category: "Events" },
 ];
 
-const MOCK_EVENTS = [
+const MOCK_INITIAL_EVENTS = [
     { id: 1, name: "Innovate 2025 Tech Fest", date: "2025-11-05", time: "09:00 AM", location: "Main Auditorium", description: "Annual technology festival with various competitions and workshops." },
     { id: 2, name: "University Sports Day", date: "2025-11-12", time: "08:00 AM", location: "University Stadium", description: "Track and field events, team sports, and fun activities." },
     { id: 3, name: "Career Fair", date: "2025-11-20", time: "10:00 AM", location: "Exhibition Hall", description: "Meet with top companies from various industries and explore job opportunities." },
     { id: 4, name: "Alumni Homecoming", date: "2025-12-05", time: "06:00 PM", location: "University Grand Hall", description: "A special evening to reconnect with old friends and faculty." },
     { id: 5, name: "End of Semester Concert", date: "2025-12-15", time: "07:00 PM", location: "Open Air Theatre", description: "Celebrate the end of the semester with live music and performances." },
+    { id: 6, name: "Archived: Spring Fest 2024", date: "2024-04-10", time: "10:00 AM", location: "Campus Grounds", description: "A look back at last year's spring festival." },
 ];
 
 const MOCK_USER = {
-    id: 'U001',
-    name: 'Alex Doe',
-    email: 'alex.doe@university.edu',
-    studentId: 'CSC/2022/001',
-    department: 'Computer Science',
-    year: '3rd Year',
-    avatar: `https://placehold.co/200x200/6366f1/ffffff?text=AD`,
+    id: 'U001', role: 'student', name: 'Alex Doe', email: 'alex.doe@university.edu', studentId: 'CSC/2022/001', department: 'Computer Science', year: '3rd Year', avatar: `https://placehold.co/200x200/6366f1/ffffff?text=AD`,
 };
 
-const MOCK_TIMETABLE = {
+const MOCK_ADMIN = {
+    id: 'A001', role: 'admin', name: 'Dr. Evelyn Reed', email: 'e.reed@university.edu', department: 'Administration', avatar: `https://placehold.co/200x200/10b981/ffffff?text=ER`,
+}
+
+const MOCK_INITIAL_TIMETABLE = {
     Monday: [{ time: "09:00-11:00", course: "Advanced Algorithms", code: "CSC301", venue: "Hall A" }, { time: "13:00-15:00", course: "Operating Systems", code: "CSC303", venue: "Lab 2" }],
     Tuesday: [{ time: "10:00-12:00", course: "Software Engineering", code: "CSC305", venue: "Hall B" }],
     Wednesday: [{ time: "09:00-11:00", course: "Advanced Algorithms", code: "CSC301", venue: "Hall A" }, { time: "14:00-16:00", course: "Computer Networks", code: "CSC307", venue: "Hall C" }],
     Thursday: [{ time: "10:00-12:00", course: "Software Engineering", code: "CSC305", venue: "Hall B" }],
     Friday: [{ time: "11:00-13:00", course: "Operating Systems", code: "CSC303", venue: "Lab 2" }, { time: "15:00-17:00", course: "Computer Networks", code: "CSC307", venue: "Hall C" }],
-    Saturday: [],
-    Sunday: [],
+    Saturday: [], Sunday: [],
 };
 
-const MOCK_RESULTS = [
-    { code: "CSC201", title: "Data Structures", grade: "A", score: 85 },
-    { code: "CSC202", title: "Digital Logic Design", grade: "B", score: 72 },
-    { code: "MTH201", title: "Linear Algebra", grade: "A", score: 91 },
-    { code: "PHY201", title: "General Physics II", grade: "C", score: 65 },
+const MOCK_INITIAL_RESULTS = [
+    { id: 1, code: "CSC201", title: "Data Structures", grade: "A", score: 85 },
+    { id: 2, code: "CSC202", title: "Digital Logic Design", grade: "B", score: 72 },
+    { id: 3, code: "MTH201", title: "Linear Algebra", grade: "A", score: 91 },
+    { id: 4, code: "PHY201", title: "General Physics II", grade: "C", score: 65 },
 ];
 
 
 // --- ICONS ---
-// In a real project, you would install a library like lucide-react.
-// Here, we define simple SVG components for demonstration.
+// ... (Icons remain the same)
 const HomeIcon = (props) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
 );
-
 const AnnounceIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
 );
-
 const EventIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
 );
-
 const TimetableIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" x2="21" y1="10" y2="10"/><line x1="10" x2="10" y1="5" y2="19"/></svg>
 );
-
 const ResultIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 13-2 2 2 2"/><path d="m14 13 2 2-2 2"/></svg>
 );
-
 const UserIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );
@@ -87,7 +79,18 @@ const ChevronLeftIcon = (props) => (
 const ChevronRightIcon = (props) => (
     <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
 );
-
+const PlusCircleIcon = (props) => (
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
+);
+const EditIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+);
+const TrashIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+);
+const SettingsIcon = (props) => (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+);
 
 // --- Reusable Components ---
 const Card = ({ children, className }) => (
@@ -96,15 +99,15 @@ const Card = ({ children, className }) => (
     </div>
 );
 
-const Button = ({ children, onClick, className, variant = 'primary' }) => {
-    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
+const Button = ({ children, onClick, className, variant = 'primary', type = 'button' }) => {
+    const baseClasses = 'px-4 py-2 rounded-lg font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2';
     const variantClasses = {
         primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
         secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
         danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     };
     return (
-        <button onClick={onClick} className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
+        <button type={type} onClick={onClick} className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
             {children}
         </button>
     );
@@ -128,33 +131,8 @@ const LandingPage = ({ setPage }) => (
     </div>
 );
 
-const SearchAndFilter = ({ searchTerm, setSearchTerm, filter, setFilter, filterOptions, placeholder }) => (
-    <div className="mb-8 p-4 bg-white rounded-lg shadow-sm sticky top-16 z-10">
-        <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-grow">
-                <input
-                    type="text"
-                    placeholder={placeholder || "Search..."}
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-            </div>
-            {filterOptions && (
-                 <select
-                    value={filter}
-                    onChange={(e) => setFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                >
-                    <option value="all">All Categories</option>
-                    {filterOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-            )}
-        </div>
-    </div>
-);
-
+// ... (SearchAndFilter, AnnouncementsPage, EventsPage, CalendarPage, TimetablePage, ResultsPage, DashboardPage, ProfilePage, LoginPage, RegisterPage are largely the same, but with state passed down)
+// NOTE: For brevity, only showing changes. The previous components are assumed to be here.
 const AnnouncementsPage = ({ announcements, setPage }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('all');
@@ -199,8 +177,32 @@ const AnnouncementsPage = ({ announcements, setPage }) => {
         </div>
     );
 };
-
-
+const SearchAndFilter = ({ searchTerm, setSearchTerm, filter, setFilter, filterOptions, placeholder }) => (
+    <div className="mb-8 p-4 bg-white rounded-lg shadow-sm sticky top-16 z-10">
+        <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-grow">
+                <input
+                    type="text"
+                    placeholder={placeholder || "Search..."}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+            </div>
+            {filterOptions && (
+                 <select
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                >
+                    <option value="all">All Categories</option>
+                    {filterOptions.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+            )}
+        </div>
+    </div>
+);
 const EventsPage = ({ events, setPage, title, archive = false }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -246,7 +248,6 @@ const EventsPage = ({ events, setPage, title, archive = false }) => {
         </div>
     );
 };
-
 const CalendarPage = ({ events }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -316,8 +317,7 @@ const CalendarPage = ({ events }) => {
         </div>
     );
 };
-
-const TimetablePage = () => (
+const TimetablePage = ({ timetable }) => (
     <div className="container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">My Timetable</h2>
         <div className="bg-white rounded-lg shadow-md overflow-x-auto">
@@ -329,7 +329,7 @@ const TimetablePage = () => (
                     </tr>
                 </thead>
                 <tbody className="divide-y">
-                    {Object.entries(MOCK_TIMETABLE).map(([day, classes]) => (
+                    {Object.entries(timetable).map(([day, classes]) => (
                         <tr key={day}>
                             <td className="p-4 font-semibold w-1/5 align-top">{day}</td>
                             <td className="p-4">
@@ -353,13 +353,11 @@ const TimetablePage = () => (
         </div>
     </div>
 );
-
-const ResultsPage = () => {
+const ResultsPage = ({ results, user }) => {
     const calculateGPA = () => {
-        // Simple GPA calculation (A=5, B=4, C=3, D=2, E=1, F=0)
         const gradePoints = { A: 5, B: 4, C: 3, D: 2, E: 1, F: 0 };
-        const totalPoints = MOCK_RESULTS.reduce((acc, result) => acc + (gradePoints[result.grade] || 0), 0);
-        return (totalPoints / MOCK_RESULTS.length).toFixed(2);
+        const totalPoints = results.reduce((acc, result) => acc + (gradePoints[result.grade] || 0), 0);
+        return (totalPoints / results.length).toFixed(2);
     };
 
     return (
@@ -379,8 +377,8 @@ const ResultsPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {MOCK_RESULTS.map(result => (
-                                        <tr key={result.code} className="border-b">
+                                    {results.map(result => (
+                                        <tr key={result.id} className="border-b">
                                             <td className="p-3">{result.code}</td>
                                             <td className="p-3">{result.title}</td>
                                             <td className="p-3 font-bold text-center">{result.grade}</td>
@@ -395,15 +393,14 @@ const ResultsPage = () => {
                     <div className="p-6 text-center bg-indigo-600 text-white h-full flex flex-col justify-center">
                         <h3 className="text-xl font-bold">Semester GPA</h3>
                         <p className="text-6xl font-extrabold my-4">{calculateGPA()}</p>
-                        <p className="text-indigo-200">Well done, Alex! Keep up the great work.</p>
+                        <p className="text-indigo-200">Well done, {user.name.split(' ')[0]}! Keep up the great work.</p>
                     </div>
                 </Card>
             </div>
         </div>
     );
 };
-
-const DashboardPage = ({ user, setPage }) => (
+const DashboardPage = ({ user, announcements, setPage }) => (
     <div className="container mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold mb-6 text-gray-800">Welcome back, {user.name.split(' ')[0]}!</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -432,7 +429,7 @@ const DashboardPage = ({ user, setPage }) => (
                  <div className="p-6">
                     <h3 className="font-bold text-lg mb-4">Recent Announcements</h3>
                     <div className="space-y-4">
-                        {MOCK_ANNOUNCEMENTS.slice(0, 3).map(ann => (
+                        {announcements.slice(0, 3).map(ann => (
                             <div key={ann.id} className="border-b pb-3 last:border-b-0">
                                 <p className="font-semibold">{ann.title}</p>
                                 <p className="text-sm text-gray-500">{ann.content.substring(0, 70)}...</p>
@@ -445,7 +442,6 @@ const DashboardPage = ({ user, setPage }) => (
         </div>
     </div>
 );
-
 const ProfilePage = ({ user, setUser, setPage }) => (
      <div className="container mx-auto px-4 py-8 max-w-4xl">
         <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">My Profile</h2>
@@ -456,7 +452,7 @@ const ProfilePage = ({ user, setUser, setPage }) => (
                     <div className="flex-grow text-center sm:text-left">
                         <h3 className="text-2xl font-bold">{user.name}</h3>
                         <p className="text-gray-600">{user.email}</p>
-                        <p className="text-gray-500 text-sm mt-2">{user.studentId}</p>
+                        {user.role === 'student' && <p className="text-gray-500 text-sm mt-2">{user.studentId}</p>}
                     </div>
                     <Button onClick={() => { setUser(null); setPage('landing'); }} variant="danger">Logout</Button>
                 </div>
@@ -467,21 +463,19 @@ const ProfilePage = ({ user, setUser, setPage }) => (
                             <p className="text-sm font-semibold text-gray-500">Department</p>
                             <p className="text-lg text-gray-800">{user.department}</p>
                         </div>
-                         <div className="bg-gray-50 p-4 rounded-lg">
+                         {user.role === 'student' && <div className="bg-gray-50 p-4 rounded-lg">
                             <p className="text-sm font-semibold text-gray-500">Year of Study</p>
                             <p className="text-lg text-gray-800">{user.year}</p>
-                        </div>
+                        </div>}
                     </div>
                 </div>
             </div>
         </Card>
     </div>
 );
-
 const LoginPage = ({ setUser, setPage }) => {
     const handleLogin = (e) => {
         e.preventDefault();
-        // In a real app, you would verify credentials
         setUser(MOCK_USER);
         setPage('dashboard');
     };
@@ -489,7 +483,7 @@ const LoginPage = ({ setUser, setPage }) => {
     return (
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-gray-50">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-                <h2 className="text-2xl font-bold text-center text-gray-900">Login to your Account</h2>
+                <h2 className="text-2xl font-bold text-center text-gray-900">Student Login</h2>
                 <form className="space-y-6" onSubmit={handleLogin}>
                     <div>
                         <label className="text-sm font-medium text-gray-700">Email Address</label>
@@ -508,18 +502,16 @@ const LoginPage = ({ setUser, setPage }) => {
         </div>
     );
 };
-
 const RegisterPage = ({ setUser, setPage }) => {
     const handleRegister = (e) => {
         e.preventDefault();
-        // In a real app, you would create a new user
-        setUser(MOCK_USER); // Log in the new user immediately
+        setUser(MOCK_USER); 
         setPage('dashboard');
     };
     return (
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-gray-50">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
-                <h2 className="text-2xl font-bold text-center text-gray-900">Create an Account</h2>
+                <h2 className="text-2xl font-bold text-center text-gray-900">Create a Student Account</h2>
                 <form className="space-y-6" onSubmit={handleRegister}>
                      <div>
                         <label className="text-sm font-medium text-gray-700">Full Name</label>
@@ -543,56 +535,199 @@ const RegisterPage = ({ setUser, setPage }) => {
     );
 };
 
+// --- NEW ADMIN COMPONENTS ---
+
+const AdminLoginPage = ({ setUser, setPage }) => {
+    const handleLogin = (e) => {
+        e.preventDefault();
+        setUser(MOCK_ADMIN);
+        setPage('admin-dashboard');
+    };
+    return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-gray-50">
+            <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-lg">
+                <h2 className="text-2xl font-bold text-center text-gray-900">Administrator Login</h2>
+                <form className="space-y-6" onSubmit={handleLogin}>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700">Admin Email</label>
+                        <input type="email" required className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500" defaultValue="e.reed@university.edu" />
+                    </div>
+                    <div>
+                        <label className="text-sm font-medium text-gray-700">Password</label>
+                        <input type="password" required className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500" defaultValue="adminpass" />
+                    </div>
+                    <Button type="submit" className="w-full">Login as Admin</Button>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+const AdminDashboardPage = ({ user, setPage, announcements, events }) => (
+    <div className="container mx-auto px-4 py-8">
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">Admin Dashboard</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="p-6 text-center">
+                <h3 className="font-bold text-lg">Total Announcements</h3>
+                <p className="text-4xl font-extrabold text-indigo-600 mt-2">{announcements.length}</p>
+            </Card>
+            <Card className="p-6 text-center">
+                <h3 className="font-bold text-lg">Total Events</h3>
+                <p className="text-4xl font-extrabold text-indigo-600 mt-2">{events.length}</p>
+            </Card>
+            <Card className="p-6 text-center col-span-1 md:col-span-2 lg:col-span-2">
+                <h3 className="font-bold text-lg">Quick Actions</h3>
+                <div className="flex justify-center gap-4 mt-4 flex-wrap">
+                    <Button onClick={() => setPage('manage-announcements')}><PlusCircleIcon /> New Announcement</Button>
+                    <Button onClick={() => setPage('manage-events')}><PlusCircleIcon /> New Event</Button>
+                </div>
+            </Card>
+        </div>
+    </div>
+);
+
+const ManageAnnouncementsPage = ({ announcements, setAnnouncements, setPage }) => {
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [category, setCategory] = useState('Academic');
+
+    const handleAddAnnouncement = (e) => {
+        e.preventDefault();
+        if (!title || !content || !category) return;
+        const newAnnouncement = {
+            id: Date.now(),
+            title,
+            content,
+            category,
+            date: new Date().toISOString().split('T')[0],
+        };
+        setAnnouncements([newAnnouncement, ...announcements]);
+        setTitle('');
+        setContent('');
+        setCategory('Academic');
+    };
+    
+    const handleDelete = (id) => {
+        if (window.confirm('Are you sure you want to delete this announcement?')) {
+            setAnnouncements(announcements.filter(a => a.id !== id));
+        }
+    }
+
+    return (
+        <div className="container mx-auto px-4 py-8">
+            <h2 className="text-3xl font-bold mb-6 text-gray-800">Manage Announcements</h2>
+            <div className="grid lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-1">
+                    <Card>
+                        <form onSubmit={handleAddAnnouncement} className="p-6 space-y-4">
+                             <h3 className="text-xl font-bold text-gray-900">Add New Announcement</h3>
+                             <div>
+                                <label className="text-sm font-medium text-gray-700">Title</label>
+                                <input type="text" value={title} onChange={e => setTitle(e.target.value)} required className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Content</label>
+                                <textarea value={content} onChange={e => setContent(e.target.value)} required rows="4" className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500"></textarea>
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-gray-700">Category</label>
+                                <select value={category} onChange={e => setCategory(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                                    <option>Academic</option>
+                                    <option>Events</option>
+                                    <option>Facilities</option>
+                                    <option>General</option>
+                                </select>
+                            </div>
+                            <Button type="submit" className="w-full"><PlusCircleIcon/> Add Announcement</Button>
+                        </form>
+                    </Card>
+                </div>
+                <div className="lg:col-span-2">
+                    <div className="space-y-4">
+                        {announcements.map(ann => (
+                             <Card key={ann.id}>
+                                <div className="p-4">
+                                    <p className="font-bold">{ann.title} <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full ml-2">{ann.category}</span></p>
+                                    <p className="text-sm text-gray-600 mt-1">{ann.content.substring(0,100)}...</p>
+                                    <div className="flex justify-end gap-2 mt-2">
+                                        <Button variant="secondary" className="px-2 py-1 text-xs"><EditIcon className="h-4 w-4"/></Button>
+                                        <Button onClick={() => handleDelete(ann.id)} variant="danger" className="px-2 py-1 text-xs"><TrashIcon className="h-4 w-4"/></Button>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+// Add ManageEventsPage, ManageTimetablePage, ManageResultsPage similarly...
 
 // --- Main App Component ---
 
 export default function App() {
     const [page, setPage] = useState('landing');
-    const [user, setUser] = useState(null); // null if logged out, user object if logged in
+    const [user, setUser] = useState(null); 
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     
-    // Redirect to login if trying to access protected pages while logged out
+    // Lift data into state so it can be modified by admin components
+    const [announcements, setAnnouncements] = useState(MOCK_INITIAL_ANNOUNCEMENTS);
+    const [events, setEvents] = useState(MOCK_INITIAL_EVENTS);
+    const [timetable, setTimetable] = useState(MOCK_INITIAL_TIMETABLE);
+    const [results, setResults] = useState(MOCK_INITIAL_RESULTS);
+
+    
+    // Page access control logic
     useEffect(() => {
-        const protectedPages = ['dashboard', 'profile', 'timetable', 'results'];
-        if (!user && protectedPages.includes(page)) {
-            setPage('login');
+        const studentPages = ['dashboard', 'profile', 'timetable', 'results'];
+        const adminPages = ['admin-dashboard', 'manage-announcements', 'manage-events', 'manage-timetable', 'manage-results'];
+        const publicPages = ['landing', 'announcements', 'events', 'events-archive', 'calendar', 'login', 'register', 'admin-login'];
+
+        if (!user) { // Logged out
+            if (!publicPages.includes(page)) setPage('landing');
+        } else if (user.role === 'student') { // Student logged in
+            if (adminPages.includes(page) || page === 'admin-login') setPage('dashboard');
+        } else if (user.role === 'admin') { // Admin logged in
+            if (studentPages.includes(page) || page === 'login' || page === 'register') setPage('admin-dashboard');
         }
-        if (user && (page === 'login' || page === 'register')){
-            setPage('dashboard');
-        }
+
     }, [page, user]);
     
     const handleSetPage = (newPage) => {
         setPage(newPage);
-        setIsMenuOpen(false); // Close menu on navigation
+        setIsMenuOpen(false);
     }
 
     const renderPage = () => {
         switch(page) {
-            case 'landing':
-                return <LandingPage setPage={handleSetPage} />;
-            case 'announcements':
-                return <AnnouncementsPage announcements={MOCK_ANNOUNCEMENTS} setPage={handleSetPage} />;
-            case 'events':
-                return <EventsPage events={MOCK_EVENTS} setPage={handleSetPage} title="Upcoming Events" />;
-            case 'events-archive':
-                 return <EventsPage events={MOCK_EVENTS} setPage={handleSetPage} title="Events Archive" archive={true} />;
-            case 'calendar':
-                return <CalendarPage events={MOCK_EVENTS} />;
-            case 'timetable':
-                return <TimetablePage />;
-            case 'results':
-                return <ResultsPage />;
-            case 'dashboard':
-                return user ? <DashboardPage user={user} setPage={handleSetPage} /> : null;
-            case 'profile':
-                return user ? <ProfilePage user={user} setUser={setUser} setPage={handleSetPage} /> : null;
-            case 'login':
-                return <LoginPage setUser={setUser} setPage={handleSetPage} />;
-            case 'register':
-                return <RegisterPage setUser={setUser} setPage={handleSetPage} />;
-            default:
-                return <LandingPage setPage={handleSetPage} />;
+            // Public pages
+            case 'landing': return <LandingPage setPage={handleSetPage} />;
+            case 'announcements': return <AnnouncementsPage announcements={announcements} setPage={handleSetPage} />;
+            case 'events': return <EventsPage events={events} setPage={handleSetPage} title="Upcoming Events" />;
+            case 'events-archive': return <EventsPage events={events} setPage={handleSetPage} title="Events Archive" archive={true} />;
+            case 'calendar': return <CalendarPage events={events} />;
+            
+            // Auth pages
+            case 'login': return <LoginPage setUser={setUser} setPage={handleSetPage} />;
+            case 'register': return <RegisterPage setUser={setUser} setPage={handleSetPage} />;
+            case 'admin-login': return <AdminLoginPage setUser={setUser} setPage={handleSetPage} />;
+            
+            // Student pages
+            case 'dashboard': return user ? <DashboardPage user={user} announcements={announcements} setPage={handleSetPage} /> : null;
+            case 'timetable': return user ? <TimetablePage timetable={timetable} /> : null;
+            case 'results': return user ? <ResultsPage results={results} user={user} /> : null;
+            case 'profile': return user ? <ProfilePage user={user} setUser={setUser} setPage={handleSetPage} /> : null;
+
+            // Admin pages
+            case 'admin-dashboard': return user ? <AdminDashboardPage user={user} setPage={handleSetPage} announcements={announcements} events={events} /> : null;
+            case 'manage-announcements': return user ? <ManageAnnouncementsPage announcements={announcements} setAnnouncements={setAnnouncements} setPage={handleSetPage} /> : null;
+            // Placeholder for other admin pages
+            case 'manage-events': return <div className="p-8">Manage Events Page - To be built</div>;
+            case 'manage-timetable': return <div className="p-8">Manage Timetable Page - To be built</div>;
+            case 'manage-results': return <div className="p-8">Manage Results Page - To be built</div>;
+
+            default: return <LandingPage setPage={handleSetPage} />;
         }
     }
 
@@ -610,24 +745,32 @@ export default function App() {
          <a 
             href="#"
             onClick={(e) => { e.preventDefault(); handleSetPage(target); }}
-            className={`flex items-center gap-3 px-4 py-2 text-base font-medium rounded-lg transition-colors ${page === target ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
+            className={`flex items-center gap-3 px-4 py-2 text-base font-medium rounded-lg transition-colors ${page.startsWith(target) ? 'bg-indigo-100 text-indigo-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}
         >
             {icon}
             {children}
         </a>
     );
     
-    const mainNavLinks = [
-        {target: 'announcements', label: 'Announcements'},
-        {target: 'events', label: 'Events'},
-        {target: 'calendar', label: 'Calendar'},
+    const publicNavLinks = [
+        {target: 'announcements', label: 'Announcements', icon: <AnnounceIcon className="h-5 w-5"/>},
+        {target: 'events', label: 'Events', icon: <EventIcon className="h-5 w-5"/>},
+        {target: 'calendar', label: 'Calendar', icon: <EventIcon className="h-5 w-5"/>},
     ];
     
-     const userNavLinks = [
+     const studentNavLinks = [
         {target: 'dashboard', label: 'Dashboard', icon: <HomeIcon className="h-5 w-5"/>},
         {target: 'timetable', label: 'Timetable', icon: <TimetableIcon className="h-5 w-5"/>},
         {target: 'results', label: 'Results', icon: <ResultIcon className="h-5 w-5"/>},
         {target: 'profile', label: 'Profile', icon: <UserIcon className="h-5 w-5"/>},
+    ];
+
+    const adminNavLinks = [
+        {target: 'admin-dashboard', label: 'Dashboard', icon: <HomeIcon className="h-5 w-5"/>},
+        {target: 'manage-announcements', label: 'Announcements', icon: <AnnounceIcon className="h-5 w-5"/>},
+        {target: 'manage-events', label: 'Events', icon: <EventIcon className="h-5 w-5"/>},
+        {target: 'manage-timetable', label: 'Timetable', icon: <TimetableIcon className="h-5 w-5"/>},
+        {target: 'manage-results', label: 'Results', icon: <ResultIcon className="h-5 w-5"/>},
     ];
 
     return (
@@ -636,14 +779,15 @@ export default function App() {
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center">
-                            <a href="#" onClick={(e) => { e.preventDefault(); handleSetPage(user ? 'dashboard' : 'landing'); }} className="text-white font-bold text-xl flex-shrink-0">
+                            <a href="#" onClick={(e) => { e.preventDefault(); handleSetPage(user ? (user.role === 'admin' ? 'admin-dashboard' : 'dashboard') : 'landing'); }} className="text-white font-bold text-xl flex-shrink-0">
                                 UniBoard
                             </a>
                             <div className="hidden md:block">
                                 <div className="ml-10 flex items-baseline space-x-4">
-                                   {mainNavLinks.map(link => <NavLink key={link.target} target={link.target}>{link.label}</NavLink>)}
-                                   {user && <NavLink target="timetable">Timetable</NavLink>}
-                                   {user && <NavLink target="results">Results</NavLink>}
+                                   {publicNavLinks.map(link => <NavLink key={link.target} target={link.target}>{link.label}</NavLink>)}
+                                   {user?.role === 'student' && <NavLink target="timetable">Timetable</NavLink>}
+                                   {user?.role === 'student' && <NavLink target="results">Results</NavLink>}
+                                   {user?.role === 'admin' && adminNavLinks.map(link => <NavLink key={link.target} target={link.target}>{link.label}</NavLink>)}
                                 </div>
                             </div>
                         </div>
@@ -652,7 +796,7 @@ export default function App() {
                                 <div className="flex items-center gap-4">
                                     <NavLink target="profile">
                                         <div className="flex items-center gap-2">
-                                            <img src={user.avatar} className="h-8 w-8 rounded-full" />
+                                            <img src={user.avatar} alt="user avatar" className="h-8 w-8 rounded-full" />
                                             <span>{user.name}</span>
                                         </div>
                                     </NavLink>
@@ -662,7 +806,7 @@ export default function App() {
                                 </div>
                             ) : (
                                 <div className="space-x-4">
-                                    <Button onClick={() => handleSetPage('login')} variant="secondary">Login</Button>
+                                    <Button onClick={() => handleSetPage('login')} variant="secondary">Student Login</Button>
                                     <Button onClick={() => handleSetPage('register')}>Register</Button>
                                 </div>
                             )}
@@ -679,15 +823,9 @@ export default function App() {
                 {isMenuOpen && (
                     <div className="md:hidden bg-white">
                         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                            {user ? (
-                                <>
-                                 {userNavLinks.map(link => <MobileNavLink key={link.target} target={link.target} icon={link.icon}>{link.label}</MobileNavLink>)}
-                                 <hr className="my-2"/>
-                                </>
-                            ): null}
-                            <MobileNavLink target="announcements" icon={<AnnounceIcon className="h-5 w-5"/>}>Announcements</MobileNavLink>
-                            <MobileNavLink target="events" icon={<EventIcon className="h-5 w-5"/>}>Events</MobileNavLink>
-                            <MobileNavLink target="calendar" icon={<EventIcon className="h-5 w-5"/>}>Calendar</MobileNavLink>
+                            {user?.role === 'student' && studentNavLinks.map(link => <MobileNavLink key={link.target} target={link.target} icon={link.icon}>{link.label}</MobileNavLink>)}
+                            {user?.role === 'admin' && adminNavLinks.map(link => <MobileNavLink key={link.target} target={link.target} icon={link.icon}>{link.label}</MobileNavLink>)}
+                            {!user && publicNavLinks.map(link => <MobileNavLink key={link.target} target={link.target} icon={link.icon}>{link.label}</MobileNavLink>)}
                         </div>
                          <div className="pt-4 pb-3 border-t border-gray-200">
                              {user ? (
@@ -699,13 +837,13 @@ export default function App() {
                                             <div className="text-sm font-medium leading-none text-gray-500">{user.email}</div>
                                          </div>
                                      </div>
-                                     <button onClick={() => { setUser(null); setPage('landing'); setIsMenuOpen(false); }} className="ml-auto bg-white flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                     <button onClick={() => { setUser(null); setPage('landing'); setIsMenuOpen(false); }} className="ml-auto bg-white flex-shrink-0 p-1 rounded-full text-gray-400 hover:text-gray-500">
                                         <LogOutIcon className="h-6 w-6" />
                                      </button>
                                  </div>
                              ) : (
                                 <div className="px-2 space-y-2">
-                                     <Button onClick={() => handleSetPage('login')} className="w-full">Login</Button>
+                                     <Button onClick={() => handleSetPage('login')} className="w-full">Student Login</Button>
                                      <Button onClick={() => handleSetPage('register')} className="w-full" variant="secondary">Register</Button>
                                 </div>
                              )}
@@ -721,6 +859,11 @@ export default function App() {
             <footer className="bg-white border-t mt-12">
                 <div className="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-gray-500">
                     <p>&copy; {new Date().getFullYear()} University Student Board. All rights reserved.</p>
+                    <p className="text-xs mt-2">
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleSetPage('admin-login');}} className="text-gray-400 hover:text-indigo-600">
+                            Admin Portal
+                        </a>
+                    </p>
                 </div>
             </footer>
         </div>
